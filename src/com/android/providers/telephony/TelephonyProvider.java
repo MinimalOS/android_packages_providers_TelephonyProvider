@@ -46,7 +46,6 @@ import android.util.Xml;
 import com.android.internal.telephony.BaseCommands;
 import com.android.internal.telephony.Phone;
 import com.android.internal.telephony.PhoneConstants;
-import com.android.internal.telephony.RILConstants;
 import com.android.internal.util.XmlUtils;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -64,7 +63,7 @@ public class TelephonyProvider extends ContentProvider
     private static final boolean DBG = true;
     private static final boolean VDBG = false;
 
-    private static final int DATABASE_VERSION = 18 << 16;
+    private static final int DATABASE_VERSION = 17 << 16;
     private static final int URL_UNKNOWN = 0;
     private static final int URL_TELEPHONY = 1;
     private static final int URL_CURRENT = 2;
@@ -208,8 +207,7 @@ public class TelephonyProvider extends ContentProvider
                     + SubscriptionManager.MCC + " INTEGER DEFAULT 0,"
                     + SubscriptionManager.MNC + " INTEGER DEFAULT 0" + ","
                     + SubscriptionManager.SUB_STATE + " INTEGER DEFAULT " + SubscriptionManager.ACTIVE + ","
-                    + SubscriptionManager.NETWORK_MODE+ " INTEGER DEFAULT " + SubscriptionManager.DEFAULT_NW_MODE + ","
-                    + SubscriptionManager.USER_NETWORK_MODE+ " INTEGER DEFAULT " + RILConstants.PREFERRED_NETWORK_MODE
+                    + SubscriptionManager.NETWORK_MODE+ " INTEGER DEFAULT " + SubscriptionManager.DEFAULT_NW_MODE
                     + ");");
             if (DBG) log("dbh.createSimInfoTable:-");
         }
@@ -488,20 +486,6 @@ public class TelephonyProvider extends ContentProvider
                     }
                 }
                 oldVersion = 17 << 16 | 6;
-            }
-            if (oldVersion < (18 << 16 | 6)) {
-                try {
-                    // Try to update the siminfo table. It might not be there.
-                    db.execSQL("ALTER TABLE " + SIMINFO_TABLE
-                            + " ADD COLUMN " + SubscriptionManager.USER_NETWORK_MODE
-                            + " INTEGER DEFAULT " + RILConstants.PREFERRED_NETWORK_MODE + ";");
-                } catch (SQLiteException e) {
-                    if (DBG) {
-                        log("onUpgrade skipping " + SIMINFO_TABLE + " upgrade. " +
-                                " The table will get created in onOpen.");
-                    }
-                }
-                oldVersion = 18 << 16 | 6;
             }
             if (DBG) {
                 log("dbh.onUpgrade:- db=" + db + " oldV=" + oldVersion + " newV=" + newVersion);
